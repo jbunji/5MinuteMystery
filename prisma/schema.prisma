@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String           @id @default(cuid())
+  email             String           @unique
+  username          String           @unique
+  passwordHash      String
+  
+  // Profile
+  displayName       String?
+  avatar            String?
+  
+  // Subscription
+  subscriptionTier  SubscriptionTier @default(FREE)
+  subscriptionEnd   DateTime?
+  
+  // Stats
+  caseSolved        Int              @default(0)
+  accuracy          Float            @default(0)
+  currentStreak     Int              @default(0)
+  longestStreak     Int              @default(0)
+  rank              String           @default("Rookie Detective")
+  
+  // Relations
+  sessions          Session[]
+  mysteries         UserMystery[]
+  achievements      UserAchievement[]
+  purchases         Purchase[]
+  createdCases      CommunityCase[]
+  
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  lastActiveAt      DateTime         @default(now())
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Mystery {
+  id              String          @id @default(cuid())
+  title           String
+  synopsis        String
+  
+  // Mystery Data
+  templateId      String?
+  template        MysteryTemplate? @relation(fields: [templateId], references: [id])
+  caseData        Json            // Full mystery content
+  solution        Json            // Encrypted solution
+  
+  // Metadata
+  difficulty      Difficulty
+  estimatedTime   Int             // in minutes
+  type            MysteryType
+  theme           String?
+  
+  // Flags
+  isDaily         Boolean         @default(false)
+  isActive        Boolean         @default(true)
+  
+  // Relations
+  evidence        Evidence[]
+  userAttempts    UserMystery[]
+  
+  createdAt       DateTime        @default(now())
+}
+
+model MysteryTemplate {
+  id              String      @id @default(cuid())
+  type            MysteryType
+  difficulty      Difficulty
+  templateData    Json        // Template structure
+  usageCount      Int         @default(0)
+  avgCompletionTime Int?      // in seconds
+  avgAccuracy     Float?
+  
+  mysteries       Mystery[]
+  
+  createdAt       DateTime    @default(now())
+  isActive        Boolean     @default(true)
+}
+
+model Evidence {
+  id              String        @id @default(cuid())
+  mysteryId       String
+  mystery         Mystery       @relation(fields: [mysteryId], references: [id], onDelete: Cascade)
+  
+  type            EvidenceType
+  name            String
+  description     String?
+  content         Json
+  
+  isRedHerring    Boolean       @default(false)
+  discoveryOrder  Int
+  
+  createdAt       DateTime      @default(now())
+}
+
+model UserMystery {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mysteryId       String
+  mystery         Mystery     @relation(fields: [mysteryId], references: [id], onDelete: Cascade)
+  
+  // Progress
+  startedAt       DateTime    @default(now())
+  completedAt     DateTime?
+  timeSpent       Int?        // in seconds
+  
+  // Solution
+  submission      Json?
+  score           Int?
+  accuracy        Float?
+  hintsUsed       Int         @default(0)
+  isCorrect       Boolean?
+  
+  @@unique([userId, mysteryId])
+}
+
+model Achievement {
+  id              String      @id @default(cuid())
+  name            String
+  description     String
+  iconUrl         String?
+  
+  requirementType String      // 'cases_solved', 'accuracy', 'streak', 'speed'
+  requirementValue Int
+  points          Int         @default(10)
+  
+  users           UserAchievement[]
+}
+
+model UserAchievement {
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId   String
+  achievement     Achievement @relation(fields: [achievementId], references: [id])
+  
+  earnedAt        DateTime    @default(now())
+  
+  @@id([userId, achievementId])
+}
+
+model CasePack {
+  id              String      @id @default(cuid())
+  name            String
+  description     String
+  price           Float
+  mysteryIds      String[]
+  theme           String?
+  
+  imageUrl        String?
+  
+  purchases       Purchase[]
+  
+  createdAt       DateTime    @default(now())
+  isActive        Boolean     @default(true)
+}
+
+model Purchase {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  productType     ProductType
+  productId       String?
+  casePackId      String?
+  casePack        CasePack?   @relation(fields: [casePackId], references: [id])
+  
+  amount          Float
+  currency        String      @default("USD")
+  platform        Platform?
+  transactionId   String      @unique
+  
+  purchasedAt     DateTime    @default(now())
+}
+
+model CommunityCase {
+  id              String      @id @default(cuid())
+  creatorId       String
+  creator         User        @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  
+  title           String
+  description     String
+  caseData        Json
+  difficulty      Difficulty
+  
+  playCount       Int         @default(0)
+  rating          Float?
+  ratingCount     Int         @default(0)
+  
+  status          CaseStatus  @default(PENDING)
+  tags            String[]
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+// Enums
+enum SubscriptionTier {
+  FREE
+  PREMIUM
+  PREMIUM_PLUS
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+  EXPERT
+}
+
+enum MysteryType {
+  MURDER
+  THEFT
+  DISAPPEARANCE
+  FRAUD
+  ESPIONAGE
+}
+
+enum EvidenceType {
+  DOCUMENT
+  PHOTO
+  TESTIMONY
+  PHYSICAL
+  DIGITAL
+}
+
+enum ProductType {
+  SUBSCRIPTION
+  CASE_PACK
+  HINTS
+  UNLOCK
+}
+
+enum Platform {
+  WEB
+  IOS
+  ANDROID
+  STEAM
+}
+
+enum CaseStatus {
+  PENDING
+  APPROVED
+  FEATURED
+  REJECTED
+}

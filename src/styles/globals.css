@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Courier+Prime:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-noir-950 text-noir-50 font-body;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .mystery-container {
+    @apply relative overflow-hidden;
+    background: 
+      radial-gradient(ellipse at top, rgba(139, 0, 0, 0.05) 0%, transparent 50%),
+      linear-gradient(180deg, #0d0d0d 0%, #1a1a1a 100%);
+  }
+
+  .evidence-card {
+    @apply relative bg-noir-900/80 backdrop-blur border border-noir-700 rounded-lg p-4 transition-all duration-300;
+    @apply hover:border-evidence-primary hover:shadow-evidence;
+  }
+
+  .evidence-card::before {
+    content: '';
+    @apply absolute inset-0 bg-evidence-glow opacity-0 transition-opacity duration-300 rounded-lg;
+  }
+
+  .evidence-card:hover::before {
+    @apply opacity-100;
+  }
+
+  .typewriter-text {
+    @apply font-detective text-parchment-200 relative inline-block overflow-hidden whitespace-nowrap;
+    border-right: 2px solid;
+    animation: 
+      typewriter 2s steps(40) 1s forwards,
+      blink 0.75s step-end infinite;
+  }
+
+  @keyframes blink {
+    from, to { border-color: transparent; }
+    50% { border-color: currentColor; }
+  }
+
+  .mystery-title {
+    @apply font-noir text-4xl md:text-6xl font-black tracking-tight;
+    text-shadow: 
+      2px 2px 4px rgba(0, 0, 0, 0.8),
+      0 0 20px rgba(139, 0, 0, 0.3);
+  }
+
+  .btn-noir {
+    @apply relative px-6 py-3 bg-noir-800 text-noir-50 font-medium rounded-md overflow-hidden transition-all duration-300;
+    @apply hover:bg-noir-700 active:scale-95;
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  }
+
+  .btn-evidence {
+    @apply btn-noir bg-gradient-to-br from-evidence-primary/20 to-evidence-primary/10;
+    @apply hover:from-evidence-primary/30 hover:to-evidence-primary/20;
+    @apply border border-evidence-primary/30;
+  }
+
+  .case-file {
+    @apply relative bg-parchment-100 text-noir-900 p-6 rounded-sm;
+    background-image: 
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 28px,
+        rgba(139, 69, 19, 0.1) 28px,
+        rgba(139, 69, 19, 0.1) 29px
+      );
+    box-shadow: 
+      0 0 20px rgba(0, 0, 0, 0.3),
+      inset 0 0 40px rgba(139, 69, 19, 0.05);
+  }
+
+  .magnifying-glass {
+    @apply absolute pointer-events-none transition-all duration-200;
+    width: 100px;
+    height: 100px;
+    border: 3px solid rgba(212, 175, 55, 0.6);
+    border-radius: 50%;
+    box-shadow: 
+      0 0 20px rgba(212, 175, 55, 0.4),
+      inset 0 0 20px rgba(212, 175, 55, 0.2);
+  }
+
+  .fog-overlay {
+    @apply absolute inset-0 pointer-events-none;
+    background: 
+      radial-gradient(circle at 20% 50%, transparent 30%, rgba(255, 255, 255, 0.02) 100%),
+      radial-gradient(circle at 80% 50%, transparent 30%, rgba(255, 255, 255, 0.02) 100%),
+      radial-gradient(circle at 50% 50%, transparent 40%, rgba(255, 255, 255, 0.03) 100%);
+    animation: fog-drift 20s ease-in-out infinite;
+  }
+
+  @keyframes fog-drift {
+    0%, 100% { transform: translateX(0) translateY(0); }
+    33% { transform: translateX(30px) translateY(-20px); }
+    66% { transform: translateX(-20px) translateY(10px); }
+  }
+}
+
+@layer utilities {
+  .text-shadow-noir {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  }
+
+  .animate-reveal {
+    animation: reveal 0.5s ease-out forwards;
+  }
+
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .scrollbar-noir::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-noir::-webkit-scrollbar-track {
+    @apply bg-noir-900;
+  }
+
+  .scrollbar-noir::-webkit-scrollbar-thumb {
+    @apply bg-noir-700 rounded-full;
+  }
+
+  .scrollbar-noir::-webkit-scrollbar-thumb:hover {
+    @apply bg-noir-600;
+  }
+}
